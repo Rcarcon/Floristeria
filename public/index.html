@@ -1,0 +1,369 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floristería - Panel de Control de Inventarios</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- Header / Navbar -->
+  <header class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center text-2xl shadow-inner">
+          🌸
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Floristería Jardín Real</h1>
+          <p class="text-xs text-emerald-100 font-medium">Panel Visual de Control de Inventarios • NestJS API</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <a href="/api" target="_blank" class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 backdrop-blur">
+          <i class="fa-solid fa-code"></i> Swagger API
+        </a>
+        <a href="/inventarios" target="_blank" class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 backdrop-blur">
+          <i class="fa-solid fa-braces"></i> JSON Raw
+        </a>
+        <button onclick="abrirModalCrear()" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-xs sm:text-sm rounded-lg shadow transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> Nueva Flor / Producto
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Resumen Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8" id="metricas-container">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-seedling"></i>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Productos</p>
+          <h3 id="stat-total" class="text-2xl font-bold text-slate-800">--</h3>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Unidades en Stock</p>
+          <h3 id="stat-unidades" class="text-2xl font-bold text-slate-800">--</h3>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-coins"></i>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Valor Inventario</p>
+          <h3 id="stat-valor" class="text-2xl font-bold text-slate-800">Q --</h3>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alerta Bajo Stock (&lt;10)</p>
+          <h3 id="stat-alertas" class="text-2xl font-bold text-rose-600">--</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="relative w-full md:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input type="text" id="filtro-busqueda" oninput="filtrarInventario()" placeholder="Buscar por nombre..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+        </div>
+        <select id="filtro-categoria" onchange="filtrarInventario()" class="px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+          <option value="">Todas las Categorías</option>
+          <option value="Rosas">Rosas</option>
+          <option value="Girasoles">Girasoles</option>
+          <option value="Orquideas">Orquídeas</option>
+          <option value="Tulipanes">Tulipanes</option>
+          <option value="Lirios">Lirios</option>
+          <option value="Claveles">Claveles</option>
+        </select>
+      </div>
+      <button onclick="cargarTodo()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+        <i class="fa-solid fa-arrows-rotate"></i> Refrescar Datos
+      </button>
+    </div>
+
+    <!-- Catálogo en Tarjetas -->
+    <div id="grid-inventario" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="col-span-full py-16 text-center text-slate-400">
+        <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-emerald-500"></i>
+        <p>Cargando flores del inventario...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Crear Producto -->
+  <div id="modal-crear" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+          🌸 Registrar Nueva Flor en Inventario
+        </h3>
+        <button onclick="cerrarModalCrear()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-nuevo-producto" onsubmit="guardarProducto(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Nombre de la Flor / Arreglo</label>
+          <input type="text" id="crear-nombre" required placeholder="Ej: Rosas Azules Especiales" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Categoría</label>
+            <input type="text" id="crear-categoria" required placeholder="Ej: Rosas, Tulipanes" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Unidad de Medida</label>
+            <input type="text" id="crear-unidad" placeholder="docena, ramo, unidad" value="docena" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Precio (Q)</label>
+            <input type="number" id="crear-precio" step="0.01" min="0.01" required placeholder="125.00" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Stock Inicial</label>
+            <input type="number" id="crear-stock" min="0" required placeholder="25" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Descripción</label>
+          <textarea id="crear-descripcion" rows="2" placeholder="Detalles de la flor o cuidados..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-3">
+          <button type="button" onclick="cerrarModalCrear()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition">Cancelar</button>
+          <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow transition">Guardar en Inventario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notificaciones -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300 z-50">
+    <span id="toast-icono">✅</span>
+    <span id="toast-mensaje" class="text-sm font-medium">Acción completada</span>
+  </div>
+
+  <script>
+    let inventarioData = [];
+
+    async function cargarTodo() {
+      await Promise.all([cargarInventario(), cargarMetricas()]);
+    }
+
+    async function cargarInventario() {
+      try {
+        const res = await fetch('/inventarios');
+        const json = await res.json();
+        inventarioData = json.data || [];
+        renderizarGrid(inventarioData);
+      } catch (err) {
+        mostrarToast('❌ Error al conectar con el backend de NestJS');
+      }
+    }
+
+    async function cargarMetricas() {
+      try {
+        const res = await fetch('/inventarios/resumen');
+        const json = await res.json();
+        const data = json.data;
+        if (data) {
+          document.getElementById('stat-total').textContent = data.totalProductos;
+          document.getElementById('stat-unidades').textContent = data.stockTotalUnidades;
+          document.getElementById('stat-valor').textContent = `Q ${data.valorTotalInventario.toLocaleString()}`;
+          document.getElementById('stat-alertas').textContent = data.alertaBajoStock.length;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderizarGrid(items) {
+      const contenedor = document.getElementById('grid-inventario');
+      if (!items || items.length === 0) {
+        contenedor.innerHTML = `
+          <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-3xl border border-dashed border-slate-200">
+            <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+            <p class="font-medium">No se encontraron productos en el inventario</p>
+          </div>`;
+        return;
+      }
+
+      contenedor.innerHTML = items.map(item => {
+        const esBajo = item.stock < 10;
+        const badgeColor = esBajo ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200';
+        const badgeTexto = esBajo ? '⚠️ Bajo Stock' : '✅ En Stock';
+
+        return `
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-lg border ${badgeColor}">
+                  ${badgeTexto}
+                </span>
+                <span class="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md">
+                  ID: ${item.id} • ${item.categoria}
+                </span>
+              </div>
+              <h4 class="text-lg font-bold text-slate-900 mb-1">${item.nombre}</h4>
+              <p class="text-xs text-slate-500 mb-4 line-clamp-2">${item.descripcion || 'Sin descripción adicional'}</p>
+              
+              <div class="bg-slate-50 rounded-2xl p-4 flex items-center justify-between mb-5">
+                <div>
+                  <span class="text-[11px] font-semibold text-slate-400 block uppercase">Precio</span>
+                  <span class="text-xl font-bold text-emerald-600">Q ${Number(item.precio).toFixed(2)}</span>
+                  <span class="text-[10px] text-slate-400">/ ${item.unidadMedida || 'unidad'}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[11px] font-semibold text-slate-400 block uppercase">Existencias</span>
+                  <span class="text-2xl font-black ${esBajo ? 'text-rose-600' : 'text-slate-800'}">${item.stock}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
+              <div class="flex items-center gap-1.5">
+                <button onclick="ajustarStock('${item.id}', -1)" title="Restar 1 existencia" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-100 hover:text-rose-600 font-bold text-slate-700 transition flex items-center justify-center">
+                  -1
+                </button>
+                <button onclick="ajustarStock('${item.id}', 1)" title="Sumar 1 existencia" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 hover:text-emerald-600 font-bold text-slate-700 transition flex items-center justify-center">
+                  +1
+                </button>
+                <button onclick="ajustePersonalizado('${item.id}')" title="Ajustar cantidad personalizada" class="px-2 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-600 transition">
+                  Ajustar
+                </button>
+              </div>
+
+              <button onclick="eliminarProducto('${item.id}', '${item.nombre}')" title="Eliminar producto" class="w-8 h-8 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition flex items-center justify-center">
+                <i class="fa-regular fa-trash-can text-sm"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filtrarInventario() {
+      const query = document.getElementById('filtro-busqueda').value.toLowerCase();
+      const categoria = document.getElementById('filtro-categoria').value.toLowerCase();
+
+      const filtrados = inventarioData.filter(i => {
+        const coincideNombre = i.nombre.toLowerCase().includes(query) || (i.descripcion && i.descripcion.toLowerCase().includes(query));
+        const coincideCat = !categoria || i.categoria.toLowerCase().includes(categoria);
+        return coincideNombre && coincideCat;
+      });
+
+      renderizarGrid(filtrados);
+    }
+
+    async function ajustarStock(id, cantidad) {
+      try {
+        const res = await fetch(`/inventarios/${id}/stock`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cantidad: Number(cantidad) }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Error al ajustar stock');
+        mostrarToast('Stock actualizado correctamente');
+        cargarTodo();
+      } catch (err) {
+        mostrarToast('❌ ' + err.message);
+      }
+    }
+
+    async function ajustePersonalizado(id) {
+      const cantidadStr = prompt('Ingresa la cantidad a ajustar (ej: 10 para agregar, -5 para descontar):');
+      if (cantidadStr === null || cantidadStr.trim() === '') return;
+      const cant = parseInt(cantidadStr, 10);
+      if (isNaN(cant)) {
+        alert('Por favor ingresa un número entero válido.');
+        return;
+      }
+      ajustarStock(id, cant);
+    }
+
+    async function eliminarProducto(id, nombre) {
+      if (!confirm(`¿Estás seguro de eliminar "${nombre}" del inventario?`)) return;
+      try {
+        const res = await fetch(`/inventarios/${id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Error al eliminar');
+        mostrarToast('🗑️ ' + json.mensaje);
+        cargarTodo();
+      } catch (err) {
+        mostrarToast('❌ ' + err.message);
+      }
+    }
+
+    async function guardarProducto(e) {
+      e.preventDefault();
+      const payload = {
+        nombre: document.getElementById('crear-nombre').value,
+        categoria: document.getElementById('crear-categoria').value,
+        unidadMedida: document.getElementById('crear-unidad').value,
+        precio: parseFloat(document.getElementById('crear-precio').value),
+        stock: parseInt(document.getElementById('crear-stock').value, 10),
+        descripcion: document.getElementById('crear-descripcion').value,
+      };
+
+      try {
+        const res = await fetch('/inventarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Error al guardar');
+        
+        mostrarToast('🎉 Flor agregada al inventario');
+        cerrarModalCrear();
+        document.getElementById('form-nuevo-producto').reset();
+        cargarTodo();
+      } catch (err) {
+        mostrarToast('❌ ' + err.message);
+      }
+    }
+
+    function abrirModalCrear() {
+      document.getElementById('modal-crear').classList.remove('hidden');
+    }
+
+    function cerrarModalCrear() {
+      document.getElementById('modal-crear').classList.add('hidden');
+    }
+
+    function mostrarToast(mensaje) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-mensaje').textContent = mensaje;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3000);
+    }
+
+    window.onload = cargarTodo;
+  </script>
+</body>
+</html>
