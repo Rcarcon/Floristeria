@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Floristería - Panel de Control de Inventarios</title>
+  <title>Floristería - Panel de Inventario y Clientes</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -22,25 +22,37 @@
         </div>
         <div>
           <h1 class="text-2xl font-bold tracking-tight">Floristería Jardín Real</h1>
-          <p class="text-xs text-emerald-100 font-medium">Panel Visual de Control de Inventarios • NestJS API</p>
+          <p class="text-xs text-emerald-100 font-medium">Panel Visual de Inventario y Clientes • NestJS API</p>
         </div>
       </div>
-      <div class="flex items-center space-x-2 sm:space-x-3">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <a href="/api" target="_blank" class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 backdrop-blur">
           <i class="fa-solid fa-code"></i> Swagger API
         </a>
-        <a href="/inventarios" target="_blank" class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 backdrop-blur">
+        <a id="json-link" href="/inventarios" target="_blank" class="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 backdrop-blur">
           <i class="fa-solid fa-braces"></i> JSON Raw
         </a>
-        <button onclick="abrirModalCrear()" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-xs sm:text-sm rounded-lg shadow transition flex items-center gap-2">
-          <i class="fa-solid fa-plus"></i> Nueva Flor / Producto
+        <button id="btn-accion-principal" onclick="abrirModalCrear()" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-xs sm:text-sm rounded-lg shadow transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> <span id="texto-accion-principal">Nueva Flor / Producto</span>
         </button>
       </div>
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
+
+    <!-- Navegación de módulos -->
+    <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 mb-8 inline-flex gap-2">
+      <button id="tab-inventario" onclick="mostrarModulo('inventario')" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm transition flex items-center gap-2">
+        <i class="fa-solid fa-boxes-stacked"></i> Inventario
+      </button>
+      <button id="tab-clientes" onclick="mostrarModulo('clientes')" class="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-sm transition flex items-center gap-2">
+        <i class="fa-solid fa-users"></i> Clientes
+      </button>
+    </div>
+
+    <!-- Módulo Inventario -->
+    <section id="modulo-inventario">
     <!-- Resumen Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8" id="metricas-container">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
@@ -110,7 +122,133 @@
         <p>Cargando flores del inventario...</p>
       </div>
     </div>
+
+    </section>
+
+    <!-- Módulo Clientes -->
+    <section id="modulo-clientes" class="hidden">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+          <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Clientes</p>
+            <h3 id="stat-clientes-total" class="text-2xl font-bold text-slate-800">--</h3>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Clientes Activos</p>
+            <h3 id="stat-clientes-activos" class="text-2xl font-bold text-emerald-600">--</h3>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+          <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-user-slash"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Clientes Inactivos</p>
+            <h3 id="stat-clientes-inactivos" class="text-2xl font-bold text-slate-700">--</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="relative w-full md:w-96">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input type="text" id="filtro-clientes" oninput="filtrarClientes()" placeholder="Buscar por nombre, correo o teléfono..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+        </div>
+        <button onclick="cargarClientes()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+          <i class="fa-solid fa-arrows-rotate"></i> Refrescar Clientes
+        </button>
+      </div>
+
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-100">
+              <tr class="text-left text-xs uppercase tracking-wider text-slate-500">
+                <th class="px-5 py-4">ID</th>
+                <th class="px-5 py-4">Cliente</th>
+                <th class="px-5 py-4">Teléfono</th>
+                <th class="px-5 py-4">Correo</th>
+                <th class="px-5 py-4">Dirección</th>
+                <th class="px-5 py-4">Estado</th>
+                <th class="px-5 py-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-clientes" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="7" class="px-5 py-14 text-center text-slate-400">
+                  <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-500"></i>
+                  <p>Cargando clientes...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <!-- Modal Crear / Editar Cliente -->
+  <div id="modal-cliente" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="titulo-modal-cliente" class="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-emerald-600"></i> Registrar Nuevo Cliente
+        </h3>
+        <button onclick="cerrarModalCliente()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-cliente" onsubmit="guardarCliente(event)" class="space-y-4">
+        <input type="hidden" id="cliente-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Nombre</label>
+            <input type="text" id="cliente-nombre" required placeholder="Ej: Ana" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Apellido</label>
+            <input type="text" id="cliente-apellido" required placeholder="Ej: López" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Teléfono</label>
+            <input type="text" id="cliente-telefono" required placeholder="5555-1111" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Correo</label>
+            <input type="email" id="cliente-correo" required placeholder="cliente@email.com" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Dirección</label>
+          <input type="text" id="cliente-direccion" required placeholder="Ej: Guatemala" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+
+        <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+          <input type="checkbox" id="cliente-estado" checked class="w-4 h-4 accent-emerald-600">
+          <span class="text-sm font-semibold text-slate-700">Cliente activo</span>
+        </label>
+
+        <div class="flex items-center justify-end gap-3 pt-3">
+          <button type="button" onclick="cerrarModalCliente()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition">Cancelar</button>
+          <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow transition">
+            Guardar Cliente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Modal Crear Producto -->
   <div id="modal-crear" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -167,6 +305,8 @@
 
   <script>
     let inventarioData = [];
+    let clientesData = [];
+    let moduloActual = 'inventario';
 
     async function cargarTodo() {
       await Promise.all([cargarInventario(), cargarMetricas()]);
@@ -354,6 +494,249 @@
       document.getElementById('modal-crear').classList.add('hidden');
     }
 
+
+    function mostrarModulo(modulo) {
+      moduloActual = modulo;
+
+      const inventario = document.getElementById('modulo-inventario');
+      const clientes = document.getElementById('modulo-clientes');
+      const tabInventario = document.getElementById('tab-inventario');
+      const tabClientes = document.getElementById('tab-clientes');
+      const btnAccion = document.getElementById('btn-accion-principal');
+      const textoAccion = document.getElementById('texto-accion-principal');
+      const jsonLink = document.getElementById('json-link');
+
+      const activo = 'px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm transition flex items-center gap-2';
+      const inactivo = 'px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-sm transition flex items-center gap-2';
+
+      if (modulo === 'clientes') {
+        inventario.classList.add('hidden');
+        clientes.classList.remove('hidden');
+
+        tabInventario.className = inactivo;
+        tabClientes.className = activo;
+
+        textoAccion.textContent = 'Nuevo Cliente';
+        btnAccion.onclick = abrirModalCliente;
+        jsonLink.href = '/clientes';
+
+        cargarClientes();
+      } else {
+        clientes.classList.add('hidden');
+        inventario.classList.remove('hidden');
+
+        tabInventario.className = activo;
+        tabClientes.className = inactivo;
+
+        textoAccion.textContent = 'Nueva Flor / Producto';
+        btnAccion.onclick = abrirModalCrear;
+        jsonLink.href = '/inventarios';
+
+        cargarTodo();
+      }
+    }
+
+    async function cargarClientes() {
+      try {
+        const res = await fetch('/clientes');
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json.message || 'Error al cargar clientes');
+        }
+
+        clientesData = Array.isArray(json) ? json : (json.data || []);
+        actualizarMetricasClientes();
+        renderizarClientes(clientesData);
+      } catch (err) {
+        mostrarToast('❌ ' + err.message);
+      }
+    }
+
+    function actualizarMetricasClientes() {
+      const total = clientesData.length;
+      const activos = clientesData.filter(cliente => cliente.estado === true).length;
+      const inactivos = total - activos;
+
+      document.getElementById('stat-clientes-total').textContent = total;
+      document.getElementById('stat-clientes-activos').textContent = activos;
+      document.getElementById('stat-clientes-inactivos').textContent = inactivos;
+    }
+
+    function renderizarClientes(clientes) {
+      const tbody = document.getElementById('tabla-clientes');
+
+      if (!clientes || clientes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-5 py-14 text-center text-slate-400">
+              <i class="fa-solid fa-users-slash text-3xl mb-3"></i>
+              <p class="font-medium">No se encontraron clientes</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = clientes.map(cliente => {
+        const estadoClase = cliente.estado
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          : 'bg-slate-100 text-slate-600 border-slate-200';
+
+        const estadoTexto = cliente.estado ? 'Activo' : 'Inactivo';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-5 py-4 font-semibold text-slate-500">${cliente.id}</td>
+            <td class="px-5 py-4">
+              <div class="font-bold text-slate-800">${escaparHtml(cliente.nombre)} ${escaparHtml(cliente.apellido)}</div>
+            </td>
+            <td class="px-5 py-4 text-slate-600">${escaparHtml(cliente.telefono)}</td>
+            <td class="px-5 py-4 text-slate-600">${escaparHtml(cliente.correo)}</td>
+            <td class="px-5 py-4 text-slate-600">${escaparHtml(cliente.direccion)}</td>
+            <td class="px-5 py-4">
+              <span class="inline-flex px-2.5 py-1 rounded-lg border text-xs font-bold ${estadoClase}">
+                ${estadoTexto}
+              </span>
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex items-center justify-end gap-2">
+                <button onclick="editarCliente(${cliente.id})" title="Editar cliente" class="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center justify-center">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="eliminarCliente(${cliente.id}, '${escaparAtributo(cliente.nombre)} ${escaparAtributo(cliente.apellido)}')" title="Eliminar cliente" class="w-9 h-9 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition flex items-center justify-center">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function filtrarClientes() {
+      const query = document.getElementById('filtro-clientes').value.trim().toLowerCase();
+
+      const filtrados = clientesData.filter(cliente => {
+        const texto = [
+          cliente.nombre,
+          cliente.apellido,
+          cliente.telefono,
+          cliente.correo,
+          cliente.direccion
+        ].join(' ').toLowerCase();
+
+        return texto.includes(query);
+      });
+
+      renderizarClientes(filtrados);
+    }
+
+    function abrirModalCliente() {
+      document.getElementById('form-cliente').reset();
+      document.getElementById('cliente-id').value = '';
+      document.getElementById('cliente-estado').checked = true;
+      document.getElementById('titulo-modal-cliente').innerHTML =
+        '<i class="fa-solid fa-user-plus text-emerald-600"></i> Registrar Nuevo Cliente';
+
+      document.getElementById('modal-cliente').classList.remove('hidden');
+    }
+
+    function cerrarModalCliente() {
+      document.getElementById('modal-cliente').classList.add('hidden');
+    }
+
+    function editarCliente(id) {
+      const cliente = clientesData.find(c => Number(c.id) === Number(id));
+
+      if (!cliente) {
+        mostrarToast('❌ Cliente no encontrado');
+        return;
+      }
+
+      document.getElementById('cliente-id').value = cliente.id;
+      document.getElementById('cliente-nombre').value = cliente.nombre || '';
+      document.getElementById('cliente-apellido').value = cliente.apellido || '';
+      document.getElementById('cliente-telefono').value = cliente.telefono || '';
+      document.getElementById('cliente-correo').value = cliente.correo || '';
+      document.getElementById('cliente-direccion').value = cliente.direccion || '';
+      document.getElementById('cliente-estado').checked = Boolean(cliente.estado);
+
+      document.getElementById('titulo-modal-cliente').innerHTML =
+        '<i class="fa-solid fa-user-pen text-blue-600"></i> Editar Cliente';
+
+      document.getElementById('modal-cliente').classList.remove('hidden');
+    }
+
+    async function guardarCliente(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('cliente-id').value;
+      const payload = {
+        nombre: document.getElementById('cliente-nombre').value.trim(),
+        apellido: document.getElementById('cliente-apellido').value.trim(),
+        telefono: document.getElementById('cliente-telefono').value.trim(),
+        correo: document.getElementById('cliente-correo').value.trim(),
+        direccion: document.getElementById('cliente-direccion').value.trim(),
+        estado: document.getElementById('cliente-estado').checked,
+      };
+
+      try {
+        const esEdicion = Boolean(id);
+        const res = await fetch(esEdicion ? `/clientes/${id}` : '/clientes', {
+          method: esEdicion ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json.message || 'Error al guardar cliente');
+        }
+
+        mostrarToast(esEdicion ? '✅ Cliente actualizado correctamente' : '🎉 Cliente registrado correctamente');
+        cerrarModalCliente();
+        await cargarClientes();
+      } catch (err) {
+        mostrarToast('❌ ' + err.message);
+      }
+    }
+
+    async function eliminarCliente(id, nombre) {
+      if (!confirm(`¿Estás seguro de eliminar al cliente "${nombre}"?`)) return;
+
+      try {
+        const res = await fetch(`/clientes/${id}`, {
+          method: 'DELETE',
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json.message || 'Error al eliminar cliente');
+        }
+
+        mostrarToast('🗑️ ' + (json.mensaje || 'Cliente eliminado correctamente'));
+        await cargarClientes();
+      } catch (err) {
+        mostrarToast('❌ ' + err.message);
+      }
+    }
+
+    function escaparHtml(valor) {
+      return String(valor ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escaparAtributo(valor) {
+      return String(valor ?? '')
+        .replaceAll('\\', '\\\\')
+        .replaceAll("'", "\\'");
+    }
+
     function mostrarToast(mensaje) {
       const toast = document.getElementById('toast');
       document.getElementById('toast-mensaje').textContent = mensaje;
@@ -363,7 +746,7 @@
       }, 3000);
     }
 
-    window.onload = cargarTodo;
+    window.onload = () => mostrarModulo('inventario');
   </script>
 </body>
 </html>
